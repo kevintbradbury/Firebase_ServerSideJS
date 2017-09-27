@@ -1,0 +1,24 @@
+{
+  "name": "millworkbros_serverside-js_app",
+  "version": "1.0.0",
+  "description": "To handle calls between mobile app and database",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run lite",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lite": "lite-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevintbradbury/MillworkBros_ServerSideJS_App.git"
+  },
+  "author": "Kevin Bradbury",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kevintbradbury/MillworkBros_ServerSideJS_App/issues"
+  },
+  "homepage": "#",
+  "devDependencies": {
+    "lite-server": "^2.3.0"
+  }
+}
