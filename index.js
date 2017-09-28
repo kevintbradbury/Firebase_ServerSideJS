@@ -17,12 +17,27 @@
  'use strict';
 
  // [START import]
-const functions = require('firebase-functions');
-const gcs = require('@google-cloud/storage')();
-const spawn = require('child-process-promise').spawn;
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
+ const functions = require('firebase-functions');
+ const mkdirp = require('mkdirp-promise');
+ // Include a Service Account Key to use a Signed URL
+ const gcs = require('@google-cloud/storage')({keyFilename: 'service-account-credentials.json'});
+ const admin = require('firebase-admin');
+ admin.initializeApp(functions.config().firebase);
+ const spawn = require('child-process-promise').spawn;
+ const path = require('path');
+ const os = require('os');
+ const fs = require('fs');
+
+// Configure the email transport using the default SMTP transport and a GMail account.
+// For other types of transports such as Sendgrid see https://nodemailer.com/transports/
+// TODO: Configure the `gmail.email` and `gmail.password` Google Cloud environment variables.
+
+const gmailEmail = encodeURIComponent(functions.config().gmail.email);
+const gmailPassword = encodeURIComponent(functions.config().gmail.password);
+const nodemailer = require('nodemailer');
+const mailTransport = nodemailer.createTransport(
+    `smtps://${gmailEmail}:${gmailPassword}@smtp.gmail.com`);
+
 // [END import]
 // [START generateThumbnail]
 /**
@@ -31,44 +46,41 @@ const fs = require('fs');
  */
 // [START generateThumbnailTrigger]
 exports.generateThumbnail = functions.storage.object().onChange(event => {
-  const object = event.data;
-  const fileBucket = object.bucket;
-  const filePath = object.name;
-  const contentType = object.contentType;
-  const resourceState = object.resourceState;
-  const metaGeneration = object.metaGeneration;
+  const snapshot = event.data;
+  const filePath = event.data.name;
+ const fileDir = path.dirname(filePath);
+ const fileName = path.basename(filePath);
+ const tempLocalFile = path.join(os.tmpdir(), filePath);
+ const tempLocalDir = path.dirname(tempLocalFile);
+ const tempLocalThumbFile = path.join(os.tmpdir());
 
-  if (!contentType.startsWith('image/')) {
-    console.console.log('This is not an image.');
-    return;
-  }
+ //  if (!event.data.contentType.startsWith('image/')) {
+ //   console.log('This is not an image.');
+ //   return;
+ // }
 
-  const fileName = path.basename(filePath);
-  if (fileName.startsWith('thumb')) {
-    console.console.log('Already a thumbnail');
-    return
-  }
+ // Exit if this is a move or deletion event.
+ if (event.data.resourceState === 'not_exists') {
+   console.log('This is a deletion event.');
+   return;
+ }
 
-  if (resourceState === 'exists' && metaGeneration > 1) {
-    console.console.log('This is a metadata change event');
-    return
-  }
+ // Cloud Storage files.
+ const bucket = gcs.bucket(event.data.bucket);
+ const file = bucket.file(filePath);
 
-  const bucket = gcs.bucket(fileBucket);
-  const tempFilePath = path.join(os.tmpdir(), fileName);
+  const mailOptions = {
+    from: '"Test Email." <noreply@firebase.com>',
+    to: "kevin.bradbury@icloud.com"
+  };
 
-  return bucket.file(filePath).download({
-    destination; tempFilePath
-  }).then(() => {
-    console.console.log('Image downloaded locally to', tempFilePath);
-    return spawn('convert', [tempFilePath, '-thumnail', '200x200>', tempFilePath]);
-  }).then(() => {
-    console.console.log('Thumbnail created at', tempFilePath);
-
-    const thumbFileName = 'thumb_${fileName}';
-    const thumbFilePath = path.join(path.dirname(filePath), thumbFileName);
-
-    return bucket.upload(tempFilePath, {destination; thumbFilePath});
-  }).then(() => fs.unlinkSync(tempFilePath));
+    mailOptions.subject = 'A Photo was uploaded to Firebase!';
+    mailOptions.text = 'CHeck your Firebase storage to view the new photo.';
+    mailOptions.attachments = file;
+    return mailTransport.sendMail(mailOptions).then(() => {
+      console.log('Image upload email was sent.');
+    }).catch(error => {
+      console.error('There was an error while sending the email:', error);
+    });
 
 });
