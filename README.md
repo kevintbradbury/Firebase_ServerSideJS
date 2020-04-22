@@ -1,2 +1,2 @@
-# MillworkBros_ServerSideJS_App
-Server-side JS functions to handle calls between iOS app &amp; the database.
+# ServerSideJS_App
+Firebase Server side to handle image uploads to S3 and send photos via email.
