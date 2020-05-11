@@ -10,13 +10,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kevintbradbury/MillworkBros_ServerSideJS_App.git"
+    "url": "git+https://github.com/kevintbradbury/Firebase_ServerSideJS.git"
   },
   "author": "Kevin Bradbury",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/kevintbradbury/MillworkBros_ServerSideJS_App/issues"
-  },
   "homepage": "http://#",
   "devDependencies": {
     "lite-server": "^2.3.0"
