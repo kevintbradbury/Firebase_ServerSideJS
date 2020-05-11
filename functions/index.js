@@ -66,7 +66,7 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
 
   const mailOptions = {
     from: '"Test Email." <noreply@firebase.com>',
-    to: "kevin.bradbury@icloud.com"
+    to: "name@email.com"
   };
 
     mailOptions.subject = 'A Photo was uploaded to Firebase!';
