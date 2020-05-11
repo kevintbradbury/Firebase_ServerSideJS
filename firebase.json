@@ -1,5 +1,5 @@
 {
-  "name": "millworkbros_serverside-js_app",
+  "name": "serverside-js_app",
   "version": "1.0.0",
   "description": "To handle calls between mobile app and database",
   "main": "index.js",
